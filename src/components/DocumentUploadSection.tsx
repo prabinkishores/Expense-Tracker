@@ -16,6 +16,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { Transaction, CountryCurrency, TransactionType } from '../types';
+import { getApiUrl } from '../utils/apiResolver';
 
 interface DocumentUploadSectionProps {
   onAddTransaction: (newTx: Omit<Transaction, 'id' | 'createdAt'>) => void;
@@ -110,7 +111,7 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
       }
 
       setLoadingStage('Connecting with server and Gemini AI...');
-      const response = await fetch('/api/parse-document-multi', {
+      const response = await fetch(getApiUrl('/api/parse-document-multi'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

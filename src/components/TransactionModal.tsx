@@ -5,6 +5,7 @@ import { Transaction, TransactionType, CountryCurrency } from '../types';
 import { EXPENSE_CATEGORIES, SAVING_CATEGORIES } from '../utils/dataStore';
 import { getLocalDateString } from '../utils/dateUtils';
 import { DocumentUploadSection } from './DocumentUploadSection';
+import { getApiUrl } from '../utils/apiResolver';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -63,7 +64,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         const base64String = reader.result as string;
         setScanMessage('Analyzing with Gemini AI...');
         try {
-          const response = await fetch('/api/parse-receipt', {
+          const response = await fetch(getApiUrl('/api/parse-receipt'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

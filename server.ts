@@ -77,6 +77,18 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Enable CORS middleware so external wrappers (like Netlify or webintoapp) can communicate with our secure AI backend
+  app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type,Authorization");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(200);
+    }
+    next();
+  });
+
   app.use(express.json({ limit: "20mb" }));
   app.use(express.urlencoded({ limit: "20mb", extended: true }));
 
