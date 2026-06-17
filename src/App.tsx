@@ -8,7 +8,8 @@ import {
   RotateCcw, 
   Trash2, 
   FileJson,
-  Info
+  Info,
+  Settings
 } from 'lucide-react';
 import { Transaction, TransactionType, CountryCurrency } from './types';
 import { getDemoTransactions } from './utils/dataStore';
@@ -16,6 +17,7 @@ import { COUNTRIES } from './utils/dateUtils';
 import { TransactionPane } from './components/TransactionPane';
 import { TotalsSection } from './components/TotalsSection';
 import { TransactionModal } from './components/TransactionModal';
+import { SettingsModal } from './components/SettingsModal';
 
 export default function App() {
   // Theme state
@@ -51,6 +53,7 @@ export default function App() {
 
   // Modal control states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [modalType, setModalType] = useState<TransactionType>('saving');
 
   // Sync dark class on body/html
@@ -199,6 +202,16 @@ export default function App() {
               <Trash2 className="h-4 w-4" />
             </button>
 
+            {/* API Settings Trigger */}
+            <button
+              id="header-settings-toggle"
+              onClick={() => setIsSettingsOpen(true)}
+              title="Mobile & AI Integration Settings"
+              className="rounded-xl border border-slate-200 dark:border-zinc-800 p-2 text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
+            >
+              <Settings className="h-4.5 w-4.5" />
+            </button>
+
             {/* Vertical separator */}
             <span className="h-6 w-[1px] bg-slate-200 dark:bg-zinc-850" />
 
@@ -268,6 +281,12 @@ export default function App() {
         onSubmit={handleAddTransaction}
         type={modalType}
         country={activeCountry}
+      />
+
+      {/* Integration & Mobile Routing Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );

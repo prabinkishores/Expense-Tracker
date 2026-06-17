@@ -16,7 +16,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { Transaction, CountryCurrency, TransactionType } from '../types';
-import { getApiUrl } from '../utils/apiResolver';
+import { parseDocumentMulti } from '../utils/geminiClient';
 
 interface DocumentUploadSectionProps {
   onAddTransaction: (newTx: Omit<Transaction, 'id' | 'createdAt'>) => void;
@@ -100,38 +100,10 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
     setParsedItems([]);
 
     try {
-      setLoadingStage('Preparing document file fields...');
-      const fileBase64 = await fileToBase64(file);
-      
-      let textPreview = '';
-      // If it's a CSV or TXT file, read text directly to send as a helpful fallback textPreview
-      if (file.type === "text/csv" || file.name.endsWith(".csv") || file.type === "text/plain" || file.name.endsWith(".txt")) {
-        setLoadingStage('Extracting spreadsheet strings...');
-        textPreview = await readAsText(file);
-      }
-
       setLoadingStage('Connecting with server and Gemini AI...');
-      const response = await fetch(getApiUrl('/api/parse-document-multi'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileBase64,
-          mimeType: file.type,
-          fileName: file.name,
-          textPreview
-        })
-      });
-
-      if (!response.ok) {
-        const errPayload = await response.json().catch(() => ({}));
-        throw new Error(errPayload.error || `HTTP Status ${response.status} failed`);
-      }
+      const data = await parseDocumentMulti(file);
 
       setLoadingStage('Formatting and segregating extracted financial records...');
-      const data = await response.json();
-      
       if (data && Array.isArray(data.transactions)) {
         const list: ParsedItem[] = data.transactions.map((t: any, index: number) => ({
           id: `parsed-${index}-${Date.now()}`,

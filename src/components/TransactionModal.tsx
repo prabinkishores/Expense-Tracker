@@ -5,7 +5,7 @@ import { Transaction, TransactionType, CountryCurrency } from '../types';
 import { EXPENSE_CATEGORIES, SAVING_CATEGORIES } from '../utils/dataStore';
 import { getLocalDateString } from '../utils/dateUtils';
 import { DocumentUploadSection } from './DocumentUploadSection';
-import { getApiUrl } from '../utils/apiResolver';
+import { parseReceipt } from '../utils/geminiClient';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -64,24 +64,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         const base64String = reader.result as string;
         setScanMessage('Analyzing with Gemini AI...');
         try {
-          const response = await fetch(getApiUrl('/api/parse-receipt'), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              imageBase64: base64String,
-              mimeType: file.type,
-              type: type,
-            }),
-          });
+          const data = await parseReceipt(base64String, file.type, type);
 
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || 'Receipt analysis failed');
-          }
-
-          const data = await response.json();
           if (data && typeof data.amount === 'number') {
             setAmount(String(data.amount));
             

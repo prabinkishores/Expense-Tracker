@@ -899,14 +899,14 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
         </div>
 
         {/* Bottom icon indicators - matching the 5 icons of the 5 tabs */}
-        <div className="flex flex-col items-center gap-3 pt-6 border-t border-slate-100 dark:border-zinc-850/60 mt-4">
-          <div className="flex items-center gap-1.5 p-1 bg-slate-50/70 dark:bg-zinc-900/50 border border-slate-100/50 dark:border-zinc-800/80 rounded-2xl shadow-3xs">
+        <div className="flex flex-col gap-4 pt-6 border-t border-slate-100 dark:border-zinc-850/60 mt-4 w-full">
+          <div className="w-full bg-slate-50/70 dark:bg-zinc-900/55 border border-slate-100/50 dark:border-zinc-800/80 rounded-2xl sm:rounded-3xl p-1.5 sm:p-2 shadow-3xs grid grid-cols-5 gap-1 sm:gap-2">
             {[
-              { id: 1, title: 'Expenses Tab', icon: TrendingDown, color: 'text-rose-500 bg-rose-500/10' },
-              { id: 2, title: 'Savings Tab', icon: PiggyBank, color: 'text-emerald-500 bg-emerald-500/10' },
-              { id: 3, title: 'Expense Breakdown', icon: PieChart, color: 'text-rose-500 bg-rose-500/10' },
-              { id: 4, title: 'Saving Breakdown', icon: Layers, color: 'text-emerald-500 bg-emerald-500/10' },
-              { id: 5, title: '6-Mo. Velocity', icon: BarChart3, color: 'text-indigo-500 bg-indigo-500/10' },
+              { id: 1, title: 'Expenses Tab', shortLabel: 'Expenses', icon: TrendingDown, color: 'text-rose-500 bg-rose-500/10' },
+              { id: 2, title: 'Savings Tab', shortLabel: 'Savings', icon: PiggyBank, color: 'text-emerald-500 bg-emerald-500/10' },
+              { id: 3, title: 'Expense Breakdown', shortLabel: 'Spend %', icon: PieChart, color: 'text-rose-500 bg-rose-500/10' },
+              { id: 4, title: 'Saving Breakdown', shortLabel: 'Save %', icon: Layers, color: 'text-emerald-500 bg-emerald-500/10' },
+              { id: 5, title: '6-Mo. Velocity', shortLabel: 'Trends', icon: BarChart3, color: 'text-indigo-500 bg-indigo-500/10' },
             ].map((tab) => {
               const TabIcon = tab.icon;
               const isActive = activeScreen === tab.id;
@@ -915,17 +915,20 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                   key={tab.id}
                   onClick={() => paginate(tab.id)}
                   title={tab.title}
-                  className={`p-2.5 rounded-xl cursor-pointer transition-all duration-300 flex items-center justify-center relative hover:scale-105 active:scale-95 ${
+                  className={`py-3.5 px-1 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] select-none text-center relative ${
                     isActive
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md scale-110'
-                      : 'text-slate-400 dark:text-zinc-400 hover:bg-slate-100/70 dark:hover:bg-zinc-800/60'
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md scale-102'
+                      : 'text-slate-400 dark:text-zinc-400 hover:bg-slate-100/70 dark:hover:bg-zinc-850/50'
                   }`}
                 >
-                  <TabIcon className="h-4.5 w-4.5" />
+                  <TabIcon className="h-5.5 w-5.5 sm:h-6.5 sm:w-6.5 md:h-7 md:w-7 transition-transform duration-200 stroke-[2] shrink-0" />
+                  <span className="text-[8px] min-[390px]:text-[9px] sm:text-[10px] font-black uppercase tracking-wider font-display truncate max-w-full leading-none">
+                    {tab.shortLabel}
+                  </span>
                   {isActive && (
                     <motion.span 
                       layoutId="activeIndicatorDot"
-                      className="absolute -bottom-1 h-1 w-1 rounded-full bg-rose-500 dark:bg-emerald-400"
+                      className="absolute bottom-1.5 h-1 w-1 rounded-full bg-rose-500 dark:bg-emerald-400"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -934,15 +937,17 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
             })}
           </div>
           
-          <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-widest font-display flex items-center gap-1.5">
-            Page {activeScreen} of 5 &middot; {
-              activeScreen === 1 ? 'Expenses Outflow' :
-              activeScreen === 2 ? 'Savings statistics' :
-              activeScreen === 3 ? 'Expense Breakdown' :
-              activeScreen === 4 ? 'Saving Breakdown' :
-              'Ledger Velocity trends'
-            }
-          </span>
+          <div className="flex items-center justify-center">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-widest font-display flex items-center gap-1.5">
+              Page {activeScreen} of 5 &middot; {
+                activeScreen === 1 ? 'Expenses Outflow' :
+                activeScreen === 2 ? 'Savings statistics' :
+                activeScreen === 3 ? 'Expense Breakdown' :
+                activeScreen === 4 ? 'Saving Breakdown' :
+                'Ledger Velocity trends'
+              }
+            </span>
+          </div>
         </div>
 
       </div>
