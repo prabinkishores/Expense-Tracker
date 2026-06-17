@@ -1,0 +1,6 @@
+{
+  "name": "Expense Tracker",
+  "description": "An interactive, elegant, and dual-pane personal finance tracker for daily, weekly, and monthly expenses and savings with local persistence and dark mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
