@@ -250,30 +250,6 @@ export default function App() {
 
       </main>
 
-      {/* Footer Branding Credit */}
-      <footer className="border-t border-slate-100 dark:border-zinc-900 bg-white dark:bg-black py-6 transition-colors mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-400 dark:text-zinc-500">
-          <p className="font-display">
-            Expense Tracker © {new Date().getFullYear()}
-          </p>
-          <div className="flex gap-4">
-            <button
-              onClick={handleLoadDemo}
-              className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
-            >
-              Populate Demo Data
-            </button>
-            <span>•</span>
-            <button
-              onClick={handleClearAll}
-              className="hover:text-rose-500 transition-colors"
-            >
-              Purge Database
-            </button>
-          </div>
-        </div>
-      </footer>
-
       {/* Dynamic Creation Dialog */}
       <TransactionModal
         isOpen={isModalOpen}
