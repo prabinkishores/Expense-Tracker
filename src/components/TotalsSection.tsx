@@ -589,7 +589,7 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                 <div className={`rounded-3xl border p-5 sm:p-6 shadow-2xs hover:shadow-sm transition-all duration-300 text-left ${
                   budgetLimit > 0 && stats.month.expenses > budgetLimit
                     ? 'border-rose-100 bg-rose-50/10 dark:border-rose-950/25 dark:bg-rose-950/10'
-                    : 'border-emerald-100/60 bg-emerald-50/20 dark:border-emerald-950/30 dark:bg-emerald-950/10'
+                    : 'border-emerald-200/50 bg-emerald-100/30 dark:border-emerald-900/40 dark:bg-emerald-950/25'
                 }`}>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     {/* Header Left details */}
@@ -612,18 +612,21 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                     {/* Interactive inline Plus button / Setter Trigger */}
                     <div className="flex items-center gap-2 flex-nowrap overflow-x-auto scrollbar-none">
                       {!isEditingBudget ? (
-                        <div className="flex items-center gap-1.5 sm:gap-2 flex-row flex-nowrap overflow-x-auto scrollbar-none w-full sm:w-auto">
+                        <div className="flex items-center gap-1 sm:gap-2 flex-row flex-nowrap overflow-x-auto scrollbar-none w-full sm:w-auto">
                           <button
                             type="button"
                             onClick={() => {
                               setIsEditingBudget(true);
                               setBudgetInput('');
                             }}
-                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] sm:text-xs font-black transition-all duration-200 select-none cursor-pointer bg-slate-900 text-white hover:bg-slate-800 dark:bg-zinc-850 dark:text-white dark:hover:bg-zinc-800 active:scale-95 text-center shadow-3xs whitespace-nowrap"
+                            className="inline-flex items-center gap-1 rounded-lg px-1.5 py-1 xs:px-2.5 xs:py-1.5 text-[9px] xs:text-[10px] sm:text-xs font-black transition-all duration-200 select-none cursor-pointer bg-slate-900 text-white hover:bg-slate-800 dark:bg-zinc-850 dark:text-white dark:hover:bg-zinc-805 active:scale-95 text-center shadow-3xs whitespace-nowrap"
                             title="Set or Increase Budget Limit"
                           >
-                            <Plus className="h-3.5 w-3.5" />
-                            <span>Set Budget</span>
+                            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                            <span>
+                              <span className="hidden xs:inline">Set Budget</span>
+                              <span className="xs:hidden">Set</span>
+                            </span>
                           </button>
 
                           <button
@@ -631,18 +634,21 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                             onClick={() => {
                               setShowCategoryBudgetModal(true);
                             }}
-                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] sm:text-xs font-black transition-all duration-200 select-none cursor-pointer border border-indigo-200 bg-white text-indigo-600 hover:bg-indigo-50/50 dark:border-indigo-950/40 dark:bg-zinc-950 dark:text-indigo-400 dark:hover:bg-zinc-900/40 active:scale-95 text-center shadow-3xs whitespace-nowrap"
+                            className="inline-flex items-center gap-1 rounded-lg px-1.5 py-1 xs:px-2.5 xs:py-1.5 text-[9px] xs:text-[10px] sm:text-xs font-black transition-all duration-200 select-none cursor-pointer border border-indigo-200 bg-white text-indigo-600 hover:bg-indigo-50/50 dark:border-indigo-950/40 dark:bg-zinc-950 dark:text-indigo-400 dark:hover:bg-zinc-900/40 active:scale-95 text-center shadow-3xs whitespace-nowrap"
                             title="Set Category Budgets (One-by-One)"
                           >
-                            <SlidersHorizontal className="h-3.5 w-3.5" />
-                            <span>Category Budgets</span>
+                            <SlidersHorizontal className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                            <span>
+                              <span className="hidden xs:inline">Category Budgets</span>
+                              <span className="xs:hidden">Category</span>
+                            </span>
                           </button>
                           
                           {budgetLimit > 0 && (
                             <div className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               {showRemoveConfirm ? (
-                                <div className="flex items-center gap-1 border border-rose-250 bg-rose-50/60 p-1 rounded-lg dark:border-rose-950/40 dark:bg-rose-950/25 whitespace-nowrap">
-                                  <span className="text-[9px] sm:text-[10px] font-bold text-rose-500 dark:text-rose-400 px-1">Sure?</span>
+                                <div className="flex items-center gap-1 border border-rose-250 bg-rose-50/60 p-0.5 rounded-lg dark:border-rose-950/40 dark:bg-rose-950/25 whitespace-nowrap">
+                                  <span className="text-[9px] sm:text-[10px] font-bold text-rose-500 dark:text-rose-400 px-0.5">Sure?</span>
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -650,14 +656,14 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                                       localStorage.setItem('monthly_budget_limit', '0');
                                       setShowRemoveConfirm(false);
                                     }}
-                                    className="bg-rose-500 hover:bg-rose-600 text-white rounded px-1.5 py-0.5 text-[9px] sm:text-[10px] font-black cursor-pointer transition-colors"
+                                    className="bg-rose-500 hover:bg-rose-600 text-white rounded px-1 py-0.5 text-[8.5px] sm:text-[10px] font-black cursor-pointer transition-colors"
                                   >
                                     Yes
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setShowRemoveConfirm(false)}
-                                    className="text-slate-500 hover:text-slate-705 bg-white border border-slate-100 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 rounded px-1.5 py-0.5 text-[9px] sm:text-[10px] font-black cursor-pointer transition-colors"
+                                    className="text-slate-500 hover:text-slate-705 bg-white border border-slate-100 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 rounded px-1 py-0.5 text-[8.5px] sm:text-[10px] font-black cursor-pointer transition-colors"
                                   >
                                     No
                                   </button>
@@ -668,11 +674,14 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                                   onClick={() => {
                                     setShowRemoveConfirm(true);
                                   }}
-                                  className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] sm:text-xs font-black transition-all duration-200 select-none cursor-pointer border border-rose-200 text-rose-500 hover:bg-rose-50 dark:border-rose-955/40 dark:text-rose-450 dark:hover:bg-rose-950/25 active:scale-95 text-center whitespace-nowrap"
+                                  className="inline-flex items-center gap-1 rounded-lg px-1.5 py-1 xs:px-2.5 xs:py-1.5 text-[9px] xs:text-[10px] sm:text-xs font-black transition-all duration-200 select-none cursor-pointer border border-rose-200 text-rose-500 hover:bg-rose-50 dark:border-rose-955/40 dark:text-rose-450 dark:hover:bg-rose-950/25 active:scale-95 text-center whitespace-nowrap"
                                   title="Delete/Disable Budget Limit"
                                 >
-                                  <X className="h-3.5 w-3.5" />
-                                  <span>Remove Budget</span>
+                                  <X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                  <span>
+                                    <span className="hidden xs:inline">Remove Budget</span>
+                                    <span className="xs:hidden">Remove</span>
+                                  </span>
                                 </button>
                               )}
                             </div>
