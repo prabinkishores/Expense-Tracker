@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Plus, Calendar, DollarSign, Tag, FileText, Camera, Loader2, FileSpreadsheet } from 'lucide-react';
+import { X, Plus, Calendar, DollarSign, Tag, FileText, Camera, Loader2, FileSpreadsheet, Mail } from 'lucide-react';
 import { Transaction, TransactionType, CountryCurrency } from '../types';
 import { EXPENSE_CATEGORIES, SAVING_CATEGORIES } from '../utils/dataStore';
 import { getLocalDateString } from '../utils/dateUtils';
 import { DocumentUploadSection } from './DocumentUploadSection';
-import { parseReceipt } from '../utils/geminiClient';
+import { GmailSyncSection } from './GmailSyncSection';
+import { parseReceipt, prettifyGeminiError } from '../utils/geminiClient';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   type,
   country
 }) => {
-  const [viewMode, setViewMode] = useState<'manual' | 'bulk'>('manual');
+  const [viewMode, setViewMode] = useState<'manual' | 'bulk' | 'gmail'>('manual');
   const [amount, setAmount] = useState<string>('');
   const [category, setCategory] = useState<string>('');
   const [date, setDate] = useState<string>('');
@@ -86,8 +87,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           }
         } catch (error: any) {
           console.error("Scanning API Error:", error);
-          alert(`Analysis Failed: ${error.message || 'Please input manually.'}`);
-          setScanMessage('');
+          const prettyError = prettifyGeminiError(error);
+          setScanMessage(`Scanning Failed: ${prettyError}`);
         } finally {
           setIsProcessing(false);
           if (fileInputRef.current) {
@@ -160,7 +161,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
             className={`relative w-full overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900 transition-all duration-300 ${
-              viewMode === 'bulk' ? 'max-w-4xl' : 'max-w-md'
+              viewMode === 'bulk' || viewMode === 'gmail' ? 'max-w-4xl' : 'max-w-md'
             }`}
           >
             {/* Direct Close Button */}
@@ -181,24 +182,26 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' 
                       : 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
                   }`}>
-                    {viewMode === 'bulk' ? 'AI Bulk Uploader' : `Add Manual ${type === 'saving' ? 'Saving' : 'Expense'}`}
+                    {viewMode === 'bulk' ? 'AI Bulk Uploader' : viewMode === 'gmail' ? 'Gmail Alert Sync 📧' : `Add Manual ${type === 'saving' ? 'Saving' : 'Expense'}`}
                   </span>
                   <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white font-display">
-                    {viewMode === 'bulk' ? 'Upload Bulk Item' : 'Create new entry'}
+                    {viewMode === 'bulk' ? 'Upload Bulk Item' : viewMode === 'gmail' ? 'DBS Bank Alert Sync' : 'Create new entry'}
                   </h2>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     {viewMode === 'bulk'
                       ? 'Drop spreadsheets, CSVs, PDFs, text files, or simple lists and segregate items easily.'
+                      : viewMode === 'gmail'
+                      ? 'Load and automatically decode DBS transaction alerts from your Google inbox.'
                       : 'Log items directly to adjust totals automatically.'
                     }
                   </p>
                 </div>
-                {viewMode === 'bulk' && (
+                {viewMode !== 'manual' && (
                   <button
                     id="back-to-manual-header-btn"
                     type="button"
                     onClick={() => setViewMode('manual')}
-                    className="shrink-0 self-start sm:self-center inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all select-none"
+                    className="shrink-0 self-start sm:self-center inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all select-none cursor-pointer"
                   >
                     <span>← Manual Form</span>
                   </button>
@@ -206,7 +209,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               </div>
             </div>
 
-            {/* Container for Form or Bulk Uploader */}
+            {/* Container for Form, Bulk Uploader or Gmail Sync */}
             {viewMode === 'bulk' ? (
               <div className="mt-4 max-h-[72vh] overflow-y-auto pr-1">
                 <DocumentUploadSection
@@ -216,6 +219,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   onAllAdded={() => {
                     setViewMode('manual');
                   }}
+                />
+              </div>
+            ) : viewMode === 'gmail' ? (
+              <div className="mt-4 max-h-[72vh] overflow-y-auto pr-1">
+                <GmailSyncSection
+                  onAddTransaction={onSubmit}
+                  country={country}
                 />
               </div>
             ) : (
@@ -261,6 +271,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       >
                         <FileSpreadsheet className="h-3 w-3" />
                         <span>Upload Bulk Item</span>
+                      </button>
+
+                      <button
+                        id="gmail-sync-toggle-button"
+                        type="button"
+                        onClick={() => setViewMode('gmail')}
+                        className="inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-1 rounded-xl text-indigo-650 hover:text-indigo-500 bg-indigo-500/10 dark:bg-indigo-400/10 dark:text-indigo-450 dark:hover:text-indigo-355 transition-all cursor-pointer select-none font-sans"
+                        title="Link DBS alerts directly from your Gmail inbox"
+                      >
+                        <Mail className="h-3 w-3" />
+                        <span>Sync Gmail Alerts</span>
                       </button>
                     </div>
                   </div>
@@ -316,9 +337,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   <div className={`mt-2 text-[11px] font-bold leading-tight flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed text-left ${
                     scanMessage.includes('Success')
                       ? 'text-emerald-650 bg-emerald-500/15 border-emerald-500/25 dark:text-emerald-400 dark:bg-emerald-500/10'
-                      : 'text-indigo-650 dark:text-indigo-400 bg-indigo-500/15 border-indigo-500/25 dark:bg-indigo-500/10 animate-pulse'
+                      : scanMessage.includes('Failed')
+                        ? 'text-rose-650 bg-rose-500/15 border-rose-500/25 dark:text-rose-400 dark:bg-rose-500/10'
+                        : 'text-indigo-650 dark:text-indigo-400 bg-indigo-500/15 border-indigo-500/25 dark:bg-indigo-500/10 animate-pulse'
                   }`}>
-                    <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${scanMessage.includes('Success') ? 'bg-emerald-500' : 'bg-indigo-500 animate-ping'}`} />
+                    <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${
+                      scanMessage.includes('Success') 
+                        ? 'bg-emerald-500' 
+                        : scanMessage.includes('Failed')
+                          ? 'bg-rose-500'
+                          : 'bg-indigo-500 animate-ping'
+                    }`} />
                     {scanMessage}
                   </div>
                 )}

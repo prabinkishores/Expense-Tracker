@@ -16,7 +16,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { Transaction, CountryCurrency, TransactionType } from '../types';
-import { parseDocumentMulti } from '../utils/geminiClient';
+import { parseDocumentMulti, prettifyGeminiError } from '../utils/geminiClient';
 
 interface DocumentUploadSectionProps {
   onAddTransaction: (newTx: Omit<Transaction, 'id' | 'createdAt'>) => void;
@@ -124,7 +124,7 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
       }
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(err.message || "An unexpected error occurred while parsing the file.");
+      setErrorMessage(prettifyGeminiError(err));
     } finally {
       setLoading(false);
       setLoadingStage('');

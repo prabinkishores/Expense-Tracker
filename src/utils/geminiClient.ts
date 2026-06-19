@@ -62,6 +62,38 @@ export const readAsText = (file: File): Promise<string> => {
 };
 
 /**
+ * Prettify Gemini API overload/quota errors into friendly, action-oriented instructions
+ */
+export const prettifyGeminiError = (err: any): string => {
+  const errMsg = String(err?.message || err || "").toLowerCase();
+  
+  if (
+    errMsg.includes("429") || 
+    errMsg.includes("quota") || 
+    errMsg.includes("limit") || 
+    errMsg.includes("exhausted")
+  ) {
+    return "The shared free-tier Gemini API key has exceeded its daily/minute quota limit. To restore high-speed parsing immediately, click the Settings (gear icon) at the top right and add your own free Gemini API key!";
+  }
+  
+  if (
+    errMsg.includes("503") || 
+    errMsg.includes("unavailable") || 
+    errMsg.includes("busy") || 
+    errMsg.includes("high demand") || 
+    errMsg.includes("overloaded")
+  ) {
+    return "The Gemini API is currently experiencing extremely high demand on the shared tier. Please try again in a few seconds, or click the Settings icon at the top right to use your own free Gemini API key for instant access!";
+  }
+  
+  if (errMsg.includes("failed to fetch") || errMsg.includes("http service error")) {
+    return "Network connection issue or backend service error. Please make sure the backend server is running, or switch settings to Direct Mode if using a custom key.";
+  }
+  
+  return err?.message || String(err);
+};
+
+/**
  * Dynamic receipt scanner router. Matches API response from server.ts.
  */
 export const parseReceipt = async (

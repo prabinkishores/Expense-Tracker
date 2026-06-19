@@ -55,6 +55,7 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [modalType, setModalType] = useState<TransactionType>('saving');
+  const [resetHomeToggle, setResetHomeToggle] = useState<boolean>(false);
 
   // Sync dark class on body/html
   useEffect(() => {
@@ -119,31 +120,33 @@ export default function App() {
   const triggerOpenModal = (type: TransactionType) => {
     setModalType(type);
     setIsModalOpen(true);
-  };
-
-  return (
+  };  return (
     <div className="min-h-screen transition-colors duration-300 bg-white text-slate-800 dark:bg-black dark:text-slate-100 flex flex-col font-sans">
       {/* Upper Brand Header */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-slate-100 dark:bg-black/80 dark:border-zinc-900 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          
-          {/* Logo Title */}
-          <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center rounded-2xl bg-indigo-600 p-2.5 text-white shadow-md shadow-indigo-600/10">
-              <PiggyBank className="h-6 w-6 stroke-[2]" />
+        
+        {/* Row 1: Logo Title + Shifted controls */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-3">
+          <div 
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-85 active:scale-95 transition-all select-none group"
+            onClick={() => setResetHomeToggle(prev => !prev)}
+            title="Go to Home Dashboard"
+          >
+            <div className="relative flex items-center justify-center rounded-2xl bg-indigo-600 p-2 sm:p-2.5 text-white shadow-md shadow-indigo-600/15 group-hover:scale-105 transition-transform shrink-0">
+              <PiggyBank className="h-5.5 w-5.5 stroke-[2]" />
               <div className="absolute -bottom-1 -right-1 rounded-md bg-emerald-500 p-0.5 text-white border border-white dark:border-black scale-90">
                 <CreditCard className="h-2.5 w-2.5" />
               </div>
             </div>
             <div>
-              <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white font-display flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white font-display flex items-center whitespace-nowrap">
                 Expense Tracker
               </h1>
             </div>
           </div>
 
-          {/* Action Tools */}
-          <div className="flex items-center gap-2.5">
+          {/* Shifted Action Tools - Made larger, nicely styled on the right side */}
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Country Selector Dropdown */}
             <div className="relative" id="country-dropdown-wrapper">
               <select
@@ -153,96 +156,58 @@ export default function App() {
                   const targetMatch = COUNTRIES.find(c => c.code === e.target.value);
                   if (targetMatch) setActiveCountry(targetMatch);
                 }}
-                className="appearance-none cursor-pointer pl-3 pr-8 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 hover:border-slate-300 dark:hover:border-zinc-700 focus:outline-none focus:border-indigo-500 transition-shadow transition-colors"
+                className="appearance-none cursor-pointer pl-3 pr-8 py-2 sm:py-2.5 text-xs sm:text-sm font-extrabold rounded-xl border border-slate-200 bg-white text-slate-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 hover:border-slate-300 dark:hover:border-zinc-700 focus:outline-none focus:border-indigo-500 transition-all shadow-xs"
                 title="Select currency country"
               >
                 {COUNTRIES.map((countryItem) => (
                   <option key={countryItem.code} value={countryItem.code}>
-                    {countryItem.flag} {countryItem.currency}
+                    {countryItem.flag} <span className="hidden xs:inline">{countryItem.currency}</span>
                   </option>
                 ))}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-slate-400 dark:text-zinc-500">
-                <span className="text-[9px]">▼</span>
+                <span className="text-[10px]">▼</span>
               </div>
             </div>
-
-            {/* Vertical separator */}
-            <span className="hidden sm:inline-block h-6 w-[1px] bg-slate-200 dark:bg-zinc-850" />
-
-            {/* Demo Trigger */}
-            <button
-              id="header-load-demo-button"
-              onClick={handleLoadDemo}
-              title="Add dummy logs"
-              className="hidden sm:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-zinc-805 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-850/60 transition-colors cursor-pointer"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span>Load Demo Data</span>
-            </button>
-
-            {/* Export Trigger */}
-            <button
-              id="header-export-backup"
-              onClick={handleExportJSON}
-              title="Download JSON backup"
-              className="hidden sm:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-zinc-805 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-850/60 transition-colors cursor-pointer"
-            >
-              <FileJson className="h-3.5 w-3.5" />
-              <span>Export</span>
-            </button>
-
-            {/* Wipe trigger */}
-            <button
-              id="header-wipe-data"
-              onClick={handleClearAll}
-              title="Wipe data"
-              className="rounded-xl border border-slate-200 dark:border-zinc-800 p-2 text-slate-500 dark:text-zinc-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 transition-colors cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
 
             {/* API Settings Trigger */}
             <button
               id="header-settings-toggle"
               onClick={() => setIsSettingsOpen(true)}
               title="Mobile & AI Integration Settings"
-              className="rounded-xl border border-slate-200 dark:border-zinc-800 p-2 text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
+              className="rounded-xl border border-slate-200 dark:border-zinc-800 p-2 sm:p-2.5 text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-all cursor-pointer shadow-xs"
             >
-              <Settings className="h-4.5 w-4.5" />
+              <Settings className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
             </button>
-
-            {/* Vertical separator */}
-            <span className="h-6 w-[1px] bg-slate-200 dark:bg-zinc-850" />
 
             {/* Theme switcher */}
             <button
               id="header-theme-toggle"
               onClick={() => setIsDarkMode(!isDarkMode)}
               title={isDarkMode ? 'Switch to light mode (white)' : 'Switch to dark mode (black)'}
-              className="rounded-xl border border-slate-200 dark:border-zinc-800 p-2 text-slate-500 dark:text-zinc-400 hover:bg-slate-55 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
+              className="rounded-xl border border-slate-200 dark:border-zinc-800 p-2 sm:p-2.5 text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-all cursor-pointer shadow-xs"
             >
               {isDarkMode ? (
-                <Sun className="h-4.5 w-4.5 text-amber-500 fill-amber-500/10" />
+                <Sun className="h-5 w-5 sm:h-5.5 sm:w-5.5 text-amber-500 fill-amber-500/10" />
               ) : (
-                <Moon className="h-4.5 w-4.5 text-indigo-500 fill-indigo-500/10" />
+                <Moon className="h-5 w-5 sm:h-5.5 sm:w-5.5 text-indigo-500 fill-indigo-500/10" />
               )}
             </button>
           </div>
-
         </div>
       </header>
 
       {/* Primary Dashboard Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-4">
         
         {/* Combined Totals Dash (The integrated 5-page bento layout) */}
-        <section id="totals-section-block" className="py-2">
+        <section id="totals-section-block" className="py-0">
           <TotalsSection 
             transactions={transactions} 
             country={activeCountry} 
             onAddClick={triggerOpenModal}
             onDeleteTransaction={handleDeleteTransaction}
+            resetHomeToggle={resetHomeToggle}
           />
         </section>
 
