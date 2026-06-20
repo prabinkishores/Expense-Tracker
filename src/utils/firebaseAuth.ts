@@ -88,12 +88,8 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
   try {
     isSigningIn = true;
     
-    if (isMobileDevice()) {
-      // In mobile PWA/browser, redirect-based login ensures they don't get blocked by aggressive popup blockers
-      await signInWithRedirect(auth, provider);
-      return null;
-    } else {
-      // Desktop / AI Studio Iframe Preview: use popup
+    // Check if we can do Popup (most robust across all modern mobile and desktop browsers)
+    try {
       const result = await signInWithPopup(auth, provider);
       const credential = GoogleAuthProvider.credentialFromResult(result);
       if (!credential?.accessToken) {
@@ -107,6 +103,19 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
         console.error(e);
       }
       return { user: result.user, accessToken: cachedAccessToken };
+    } catch (popupError: any) {
+      // If popup is blocked or closed/errors out, fall back to redirect on mobile
+      if (
+        isMobileDevice() ||
+        popupError?.code === 'auth/popup-blocked' ||
+        popupError?.code === 'auth/cancelled-popup-request' ||
+        popupError?.code === 'auth/popup-closed-by-user'
+      ) {
+        console.warn('Popup login failed or bypassed, trying redirect fallback...', popupError);
+        await signInWithRedirect(auth, provider);
+        return null;
+      }
+      throw popupError;
     }
   } catch (error: any) {
     console.error('Google Gmail Sign-In Error:', error);
