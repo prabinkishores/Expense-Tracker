@@ -93,6 +93,7 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
   const [isEditingBudget, setIsEditingBudget] = useState<boolean>(false);
   const [budgetInput, setBudgetInput] = useState<string>('');
   const [showRemoveConfirm, setShowRemoveConfirm] = useState<boolean>(false);
+  const [showResetConfirm, setShowResetConfirm] = useState<boolean>(false);
   const [isAlertDismissed, setIsAlertDismissed] = useState<boolean>(false);
   const [showOverspentToast, setShowOverspentToast] = useState<boolean>(false);
   const [lastOverspentAmount, setLastOverspentAmount] = useState<number>(0);
@@ -591,22 +592,22 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
             >
             {/* Screen 1: Expenses Overview and Living Outflows Pane */}
             {activeScreen === 1 && (
-              <div className="space-y-6">
+              <div className="space-y-2">
 
                 {/* Monthly Expense Budget progress and setters (NOW ON TOP) */}
-                <div className="rounded-3xl border border-[#004741]/20 p-5 sm:p-6 shadow-2xs hover:shadow-sm transition-all duration-300 text-left bg-[#004741] text-[#F0EDE4]">
+                <div className="rounded-3xl border-2 border-white p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300 text-left bg-[#2872A1] text-white">
                   <div className="flex flex-col gap-4">
                     {/* Header Left details */}
                     <div>
-                      <h4 className="text-md font-bold text-[#F0EDE4] font-display flex items-center gap-2">
+                      <h4 className="text-md font-black text-white font-display flex items-center gap-2">
                         {budgetLimit > 0 && stats.month.expenses > budgetLimit ? (
-                          <AlertTriangle className="h-4.5 w-4.5 text-rose-300 shrink-0 animate-bounce" />
+                          <AlertTriangle className="h-4.5 w-4.5 text-rose-200 shrink-0 animate-bounce" />
                         ) : (
-                          <Activity className="h-4.5 w-4.5 text-[#F0EDE4] shrink-0 animate-pulse" />
+                          <Activity className="h-4.5 w-4.5 text-white shrink-0 animate-pulse" />
                         )}
                         Monthly Budget Limit Setup
                         {budgetLimit > 0 && stats.month.expenses > budgetLimit && (
-                          <span className="inline-flex items-center rounded-md bg-rose-955/40 px-1.5 py-0.5 text-[10px] sm:text-xs font-black text-rose-200 ring-1 ring-inset ring-rose-500/30">
+                          <span className="inline-flex items-center rounded-md bg-rose-900 px-1.5 py-0.5 text-[10px] sm:text-xs font-black text-white ring-1 ring-inset ring-white">
                             Exceeded
                           </span>
                         )}
@@ -623,10 +624,10 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                               setIsEditingBudget(true);
                               setBudgetInput('');
                             }}
-                            className="inline-flex items-center justify-center gap-1.5 rounded-xl p-2 sm:p-2.5 text-[10px] xs:text-xs sm:text-sm font-extrabold transition-all duration-200 select-none cursor-pointer bg-white/10 text-[#F0EDE4] hover:bg-white/20 active:scale-95 shadow-xs text-center border border-white/10"
+                            className="inline-flex items-center justify-center gap-1.5 rounded-xl p-2 sm:p-2.5 text-[10px] xs:text-xs sm:text-sm font-black transition-all duration-200 select-none cursor-pointer bg-white/20 text-white hover:bg-white/30 active:scale-95 shadow-xs text-center border-2 border-white"
                             title="Set or Increase Budget Limit"
                           >
-                            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-[#F0EDE4]" />
+                            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-white" />
                             <span className="truncate">Set Budget</span>
                           </button>
 
@@ -635,34 +636,29 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                             onClick={() => {
                               setShowCategoryBudgetModal(true);
                             }}
-                            className="inline-flex items-center justify-center gap-1.5 rounded-xl p-2 sm:p-2.5 text-[10px] xs:text-xs sm:text-sm font-extrabold transition-all duration-200 select-none cursor-pointer bg-white/10 text-[#F0EDE4] hover:bg-white/20 active:scale-95 shadow-xs text-center border border-white/10"
+                            className="inline-flex items-center justify-center gap-1.5 rounded-xl p-2 sm:p-2.5 text-[10px] xs:text-xs sm:text-sm font-black transition-all duration-200 select-none cursor-pointer bg-white/20 text-white hover:bg-white/30 active:scale-95 shadow-xs text-center border-2 border-white"
                             title="Set Category Budgets (One-by-One)"
                           >
-                            <SlidersHorizontal className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-[#F0EDE4]" />
+                            <SlidersHorizontal className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-white" />
                             <span className="truncate">Categories</span>
                           </button>
                           
                           <button
                             type="button"
                             onClick={() => {
-                              if (window.confirm("Are you sure you want to delete and reset your monthly budget?")) {
-                                setBudgetLimit(0);
-                                localStorage.setItem('monthly_budget_limit', '0');
-                                setCategoryBudgets({});
-                                localStorage.setItem('monthly_category_budgets', '{}');
-                              }
+                              setShowResetConfirm(true);
                             }}
-                            className="inline-flex items-center justify-center gap-1.5 rounded-xl p-2 sm:p-2.5 text-[10px] xs:text-xs sm:text-sm font-extrabold transition-all duration-200 select-none cursor-pointer bg-white/10 text-[#F0EDE4] hover:bg-white/20 active:scale-95 shadow-xs text-center border border-white/10"
+                            className="inline-flex items-center justify-center gap-1.5 rounded-xl p-2 sm:p-2.5 text-[10px] xs:text-xs sm:text-sm font-black transition-all duration-200 select-none cursor-pointer bg-white/20 text-white hover:bg-white/30 active:scale-95 shadow-xs text-center border-2 border-white"
                             title="Reset all budget thresholds to zero"
                           >
-                            <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-[#F0EDE4]" />
+                            <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-white" />
                             <span className="truncate">Reset Budget</span>
                           </button>
                         </div>
                       ) : (
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
                           <div className="relative flex-1">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#F0EDE4]/80 font-bold font-mono">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-white font-black font-mono">
                               {country.currency}
                             </span>
                             <input
@@ -672,7 +668,7 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                               placeholder="e.g. 500"
                               value={budgetInput}
                               onChange={(e) => setBudgetInput(e.target.value)}
-                              className="pl-8 pr-3 py-3 text-sm rounded-xl border border-white/20 bg-white/10 text-white placeholder-white/50 w-full font-mono font-bold focus:outline-none"
+                              className="pl-8 pr-3 py-3 text-sm rounded-xl border-2 border-white bg-white/20 text-white placeholder-white/70 w-full font-mono font-bold focus:outline-none"
                               autoFocus
                             />
                           </div>
@@ -683,7 +679,7 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                               type="button"
                               onClick={handleAddBudgetDelta}
                               disabled={!budgetInput || isNaN(parseFloat(budgetInput)) || parseFloat(budgetInput) <= 0}
-                              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50 select-none cursor-pointer"
+                              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 text-xs font-black bg-emerald-555 hover:bg-emerald-500 text-white border-2 border-white disabled:opacity-50 select-none cursor-pointer"
                               title="Add this amount to current budget limit"
                             >
                               <Plus className="h-3.5 w-3.5" />
@@ -695,7 +691,7 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                               type="button"
                               onClick={handleUpdateBudget}
                               disabled={!budgetInput || isNaN(parseFloat(budgetInput)) || parseFloat(budgetInput) < 0}
-                              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 text-xs font-bold bg-indigo-650 hover:bg-indigo-600 text-white disabled:opacity-50 select-none cursor-pointer"
+                              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 text-xs font-black bg-indigo-600 hover:bg-indigo-500 text-white border-2 border-white disabled:opacity-50 select-none cursor-pointer"
                               title="Overwrite to set a specific new limit"
                             >
                               <Check className="h-3.5 w-3.5" />
@@ -709,7 +705,7 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                                 setIsEditingBudget(false);
                                 setBudgetInput('');
                               }}
-                              className="p-3 rounded-xl border border-white/20 text-[#F0EDE4] hover:text-white hover:bg-white/10 select-none cursor-pointer"
+                              className="p-3 rounded-xl border-2 border-white text-white hover:bg-white/20 select-none cursor-pointer"
                             >
                               <X className="h-4 w-4" />
                             </button>
@@ -722,13 +718,13 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                   {/* Budget & Spend metrics detail row */}
                   {/* Budget & Spend metrics detail row */}
                   {budgetLimit <= 0 && Object.keys(categoryBudgets).length === 0 ? (
-                    <div className="mt-5 p-5 rounded-2xl bg-white/5 border border-white/10 text-center">
-                      <Percent className="h-6 w-6 text-[#F0EDE4]/65 mx-auto mb-2 stroke-[1.5]" />
-                      <p className="text-xs font-semibold text-[#F0EDE4]/80">
+                    <div className="mt-5 p-5 rounded-2xl bg-white/10 border-2 border-white text-center">
+                      <Percent className="h-6 w-6 text-white mx-auto mb-2 stroke-[2.5]" />
+                      <p className="text-sm font-black text-white">
                         No budget limit is set for this month.
                       </p>
-                      <p className="text-[10px] text-[#F0EDE4]/60 mt-1">
-                        Use the <strong className="font-semibold text-white">"Set Budget"</strong> or <strong className="font-semibold text-white">"Category Budgets"</strong> actions above to track and visualize your limits.
+                      <p className="text-[11px] text-white/95 mt-1.5 font-bold">
+                        Use the <strong className="font-extrabold text-white underline underline-offset-2">"Set Budget"</strong> or <strong className="font-extrabold text-white underline underline-offset-2">"Category Budgets"</strong> actions above to track and visualize your limits.
                       </p>
                     </div>
                   ) : (() => {
@@ -738,50 +734,50 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                     const pct = effectiveLimit > 0 ? (monthSpent / effectiveLimit) * 100 : 0;
                     
                     // Style attributes conforming to color mapping specifications
-                    let colorBg = "bg-emerald-400";
-                    let colorText = "text-emerald-300 font-bold";
+                    let colorBg = "bg-emerald-300";
+                    let colorText = "text-emerald-200 font-black";
                     let stateLabel = "On Track";
 
                     if (monthSpent === 0) {
-                      colorBg = "bg-emerald-400";
-                      colorText = "text-emerald-300 font-bold";
+                      colorBg = "bg-emerald-300";
+                      colorText = "text-emerald-200 font-black drop-shadow-sm";
                       stateLabel = "Pristine Status (Zero Spent)";
                     } else if (pct <= 45) {
-                      colorBg = "bg-emerald-400";
-                      colorText = "text-emerald-300 font-bold";
+                      colorBg = "bg-emerald-300";
+                      colorText = "text-emerald-200 font-black drop-shadow-sm";
                       stateLabel = "Pristine State";
                     } else if (pct <= 75) {
                       colorBg = "bg-yellow-300";
-                      colorText = "text-yellow-300 font-bold";
+                      colorText = "text-yellow-300 font-black drop-shadow-sm";
                       stateLabel = "Moderate Speed";
                     } else if (pct <= 95) {
-                      colorBg = "bg-orange-400";
-                      colorText = "text-orange-300 font-bold";
+                      colorBg = "bg-orange-350";
+                      colorText = "text-orange-200 font-black drop-shadow-sm";
                       stateLabel = "Warning limit near";
                     } else {
-                      colorBg = "bg-rose-400 animate-pulse";
-                      colorText = "text-rose-300 font-black";
+                      colorBg = "bg-red-400 animate-pulse border border-white";
+                      colorText = "text-red-200 font-black drop-shadow-sm";
                       stateLabel = "Deficit Limit Exceeded";
                     }
 
                     return (
                        <div className="mt-6 space-y-4 animate-in fade-in duration-300">
                          {/* Numbers Row */}
-                         <div className="flex items-end justify-between border-b border-slate-50 dark:border-zinc-900/50 pb-2">
+                         <div className="flex items-end justify-between border-b border-white/20 pb-2">
                            <div>
-                             <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest block leading-none font-display">
+                             <span className="text-[10px] font-black text-white/95 uppercase tracking-widest block leading-none font-display">
                                Budget amount
                              </span>
-                             <span className="font-mono text-xl font-black text-slate-800 dark:text-white mt-1.5 inline-block leading-none">
+                             <span className="font-mono text-xl font-black text-white mt-1.5 inline-block leading-none">
                                {formatCurrency(effectiveLimit, country.locale, country.currency)}
                              </span>
                            </div>
 
                            <div className="text-right">
-                             <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest block leading-none font-display">
+                             <span className="text-[10px] font-black text-white/95 uppercase tracking-widest block leading-none font-display">
                                Spend amount
                              </span>
-                             <span className="font-mono text-xl font-black text-slate-800 dark:text-white mt-1.5 inline-block leading-none">
+                             <span className="font-mono text-xl font-black text-red-300 drop-shadow-sm mt-1.5 inline-block leading-none">
                                {formatCurrency(monthSpent, country.locale, country.currency)}
                              </span>
                            </div>
@@ -789,7 +785,7 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
 
                          {/* Progress track bar with segmented colors */}
                          <div className="space-y-2">
-                           <div className="relative w-full h-3 rounded-full bg-slate-100 dark:bg-zinc-850 overflow-hidden">
+                           <div className="relative w-full h-3.5 rounded-full bg-white/35 overflow-hidden">
                              {/* Segmented bar */}
                              <motion.div
                                initial={{ width: 0 }}
@@ -800,12 +796,12 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                            </div>
 
                            {/* Visual Info Label */}
-                           <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-zinc-500 font-medium">
+                           <div className="flex items-center justify-between text-[11px] text-white font-bold">
                              <div className="flex items-center gap-1.5">
                                <span className={`inline-block h-2 w-2 rounded-full ${colorBg}`} />
                                <span>Status: <strong className={colorText}>{stateLabel}</strong></span>
                              </div>
-                             <div className="font-mono font-bold">
+                             <div className="font-mono font-black text-white">
                                <span>{pct.toFixed(0)}% Used</span>
                              </div>
                            </div>
@@ -896,11 +892,7 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                 </div>
 
                 {/* Expenses Pane Ledger strictly nested in page 1 - NOW BELW */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-widest pl-1" id="expenses-pane-block">
-                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-                    Living Outflows Ledger
-                  </div>
+                <div className="space-y-2">
                   <TransactionPane
                     type="expense"
                     transactions={transactions.filter(t => t.type === 'expense')}
@@ -909,7 +901,7 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                     country={country}
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   {intervals.map((interval) => (
                     <button
                       key={interval.id}
@@ -918,35 +910,35 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                         setSelectedDetailInterval({ type: 'expense', range: interval.id as any });
                         setDetailSearchQuery('');
                       }}
-                      className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-5 dark:border-zinc-900 dark:bg-zinc-950 shadow-2xs hover:shadow-md hover:border-indigo-100/80 hover:bg-slate-50/20 dark:hover:border-indigo-950/40 dark:hover:bg-zinc-900/30 transition-all duration-300 text-left cursor-pointer group w-full"
+                      className="relative overflow-hidden rounded-3xl border-2 border-white bg-[#2872A1] p-5 shadow-xs hover:shadow-lg hover:brightness-105 transition-all duration-300 text-left cursor-pointer group w-full text-white"
                     >
                       {/* Header */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-md font-bold text-slate-800 dark:text-white font-display group-hover:text-indigo-650 dark:group-hover:text-indigo-400 transition-colors">
+                          <h3 className="text-md font-black text-white font-display transition-colors">
                             {interval.title}
                           </h3>
-                          <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5 font-medium font-sans">
+                          <p className="text-[10px] text-white/95 mt-0.5 font-bold font-sans">
                             {interval.desc}
                           </p>
                         </div>
                         
-                        <span className="inline-flex items-center gap-0.5 rounded-lg px-2 py-0.5 text-[9px] font-bold bg-rose-500/10 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 uppercase">
+                        <span className="inline-flex items-center gap-0.5 rounded-lg px-2 py-0.5 text-[9px] font-black bg-white/25 text-rose-250 uppercase ring-1 ring-white/40">
                           OUTFLOW
                         </span>
                       </div>
 
                       {/* Cash Numbers */}
-                      <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-zinc-850 flex items-end justify-between">
+                      <div className="mt-5 pt-3.5 border-t border-white/25 flex items-end justify-between">
                         <div>
-                          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block font-display">
+                          <span className="text-[10px] font-black text-white/95 uppercase tracking-widest block font-display">
                             Total Outflow Spent
                           </span>
-                          <p className="font-mono text-3xl font-black text-rose-500 dark:text-rose-400 mt-2 leading-none tracking-tight">
+                          <p className="font-mono text-3xl font-black text-red-300 drop-shadow-sm mt-2 leading-none tracking-tight">
                             {formatCurrency(interval.data.expenses, country.locale, country.currency)}
                           </p>
                         </div>
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 group-hover:translate-x-1 transition-transform font-bold flex items-center gap-1 font-sans">
+                        <span className="text-[10px] text-white/90 group-hover:translate-x-1 transition-transform font-black flex items-center gap-1 font-sans">
                           View details &rarr;
                         </span>
                       </div>
@@ -958,10 +950,10 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
 
             {/* Screen 2: Savings Overview with savings statistics portal and Savings Ledger Pane */}
             {activeScreen === 2 && (
-              <div className="space-y-6">
+              <div className="space-y-2">
                 
                 {/* Savings Pane strictly nested in page 2 - NOW ON TOP */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-widest pl-1" id="savings-pane-block">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     Asset Inflows Ledger
@@ -976,28 +968,28 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                 </div>
 
                 {/* Asset Income & Savings statistics - NOW BELOW */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-emerald-500/5 border border-emerald-500/10 p-5 rounded-3xl text-left">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-emerald-600 border-2 border-white p-5 rounded-3xl text-left text-white shadow-xs hover:shadow-md transition-all duration-300">
                   <div>
-                    <h3 className="text-md font-bold text-slate-800 dark:text-white font-display flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Asset Income & Savings statistics
+                    <h3 className="text-md font-black text-white font-display flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                      Asset Income &amp; Savings statistics
                     </h3>
-                    <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1 font-sans">
+                    <p className="text-xs text-white/95 mt-1 font-sans font-bold">
                       Consolidated income reserves and active asset generation sums
                     </p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block leading-none font-display">
+                    <span className="text-[10px] font-black text-white/95 uppercase tracking-widest block leading-none font-display">
                       Total Inflow Saved
                     </span>
-                    <p className="font-mono text-2xl font-black text-emerald-500 dark:text-emerald-455 mt-1.5 leading-none tracking-tight">
+                    <p className="font-mono text-2xl font-black text-white mt-1.5 leading-none tracking-tight">
                       {formatCurrency(stats.lifetimeSavings, country.locale, country.currency)}
                     </p>
                   </div>
                 </div>
 
                 {/* Savings statistics intervals - NOW BELOW */}
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   {[
                     { id: 'today', title: "Today's Savings", desc: "Capital logged since midnight UTC", val: stats.today.savings },
                     { id: 'week', title: "This Week's Savings", desc: "Current rolling week capital flow", val: stats.week.savings },
@@ -1010,33 +1002,33 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                         setSelectedDetailInterval({ type: 'saving', range: item.id as any });
                         setDetailSearchQuery('');
                       }}
-                      className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-5 dark:border-zinc-900 dark:bg-zinc-950 shadow-2xs hover:shadow-md hover:border-emerald-100/80 hover:bg-slate-50/20 dark:hover:border-emerald-950/40 dark:hover:bg-zinc-900/30 transition-all duration-300 text-left cursor-pointer group w-full"
+                      className="relative overflow-hidden rounded-3xl border-2 border-white bg-emerald-600 p-5 shadow-xs hover:shadow-lg hover:brightness-105 transition-all duration-300 text-left cursor-pointer group w-full text-white"
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-md font-bold text-slate-800 dark:text-white font-display group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                          <h3 className="text-md font-black text-white font-display transition-colors">
                             {item.title}
                           </h3>
-                          <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5 font-medium font-sans">
+                          <p className="text-[10px] text-white/95 mt-0.5 font-bold font-sans">
                             {item.desc}
                           </p>
                         </div>
                         
-                        <span className="inline-flex items-center gap-0.5 rounded-lg px-2 py-0.5 text-[9px] font-bold bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 uppercase">
+                        <span className="inline-flex items-center gap-0.5 rounded-lg px-2 py-0.5 text-[9px] font-black bg-white/25 text-white uppercase ring-1 ring-white/40">
                           INFLOW
                         </span>
                       </div>
 
-                      <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-zinc-850 flex items-end justify-between">
+                      <div className="mt-5 pt-3.5 border-t border-white/25 flex items-end justify-between">
                         <div>
-                          <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-widest block font-display">
+                          <span className="text-[10px] font-black text-white/95 uppercase tracking-widest block font-display">
                             Sum Received
                           </span>
-                          <p className="font-mono text-3xl font-black text-emerald-500 dark:text-emerald-400 mt-2 leading-none tracking-tight">
+                          <p className="font-mono text-3xl font-black text-emerald-250 drop-shadow-sm mt-2 leading-none tracking-tight">
                             {formatCurrency(item.val, country.locale, country.currency)}
                           </p>
                         </div>
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 group-hover:translate-x-1 transition-transform font-bold flex items-center gap-1 font-sans">
+                        <span className="text-[10px] text-white/90 group-hover:translate-x-1 transition-transform font-black flex items-center gap-1 font-sans">
                           View details &rarr;
                         </span>
                       </div>
@@ -1914,6 +1906,60 @@ export const TotalsSection: React.FC<TotalsSectionProps> = ({
                     </p>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom React Dialog for Confirmation - Safe for iFrame */}
+      <AnimatePresence>
+        {showResetConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs select-none">
+            <div className="absolute inset-0" onClick={() => setShowResetConfirm(false)} />
+            
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative max-w-md w-full bg-white dark:bg-zinc-950 rounded-3xl shadow-2xl border border-slate-100 dark:border-zinc-900/80 overflow-hidden flex flex-col z-10"
+            >
+              <div className="p-6 flex flex-col items-center text-center gap-4">
+                <div className="rounded-2xl bg-rose-50 dark:bg-rose-955/20 p-3.5 text-rose-500">
+                  <AlertTriangle className="h-8 w-8 text-rose-600 dark:text-rose-450 shrink-0" />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white font-display">
+                    Erase &amp; Reset Budget Defaults?
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
+                    Are you absolutely sure you want to completely erase your monthly budget limit and custom category budgets? This will immediately wipe clean your current logged budget amount and thresholds.
+                  </p>
+                </div>
+
+                <div className="flex gap-3 w-full mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowResetConfirm(false)}
+                    className="flex-1 py-2.5 rounded-xl border-2 border-slate-200 hover:bg-slate-50 font-black text-xs text-slate-655 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900 transition-colors cursor-pointer select-none"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBudgetLimit(0);
+                      localStorage.setItem('monthly_budget_limit', '0');
+                      setCategoryBudgets({});
+                      localStorage.setItem('monthly_category_budgets', '{}');
+                      setShowResetConfirm(false);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 font-black text-xs text-white shadow-xs transition-colors cursor-pointer select-none"
+                  >
+                    Yes, Erase &amp; Reset
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>

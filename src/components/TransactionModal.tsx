@@ -14,6 +14,7 @@ interface TransactionModalProps {
   onSubmit: (data: Omit<Transaction, 'id' | 'createdAt'>) => void;
   type: TransactionType;
   country: CountryCurrency;
+  transactions?: Transaction[];
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({
@@ -21,7 +22,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   onClose,
   onSubmit,
   type,
-  country
+  country,
+  transactions
 }) => {
   const [viewMode, setViewMode] = useState<'manual' | 'bulk' | 'gmail'>('manual');
   const [amount, setAmount] = useState<string>('');
@@ -225,6 +227,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <div className="mt-4 max-h-[72vh] overflow-y-auto pr-1">
                 <GmailSyncSection
                   onAddTransaction={onSubmit}
+                  transactions={transactions}
                   country={country}
                 />
               </div>

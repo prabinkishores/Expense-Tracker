@@ -161,7 +161,7 @@ export default function App() {
               >
                 {COUNTRIES.map((countryItem) => (
                   <option key={countryItem.code} value={countryItem.code}>
-                    {countryItem.flag} <span className="hidden xs:inline">{countryItem.currency}</span>
+                    {`${countryItem.flag} ${countryItem.currency}`}
                   </option>
                 ))}
               </select>
@@ -222,6 +222,7 @@ export default function App() {
         onSubmit={handleAddTransaction}
         type={modalType}
         country={activeCountry}
+        transactions={transactions}
       />
 
       {/* Integration & Mobile Routing Modal */}

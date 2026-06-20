@@ -100,15 +100,25 @@ export const TransactionPane: React.FC<TransactionPaneProps> = ({
   return (
     <div 
       id={`${type}-pane`}
-      className="flex flex-col h-[520px] rounded-3xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden"
+      className={`flex flex-col h-[520px] rounded-3xl border shadow-sm overflow-hidden ${
+        type === 'expense'
+          ? 'bg-[#F0EDE4] text-[#2872A1] border-[#2872A1]/20'
+          : 'bg-white border-slate-100 dark:border-slate-800 dark:bg-slate-900'
+      }`}
     >
       {/* Pane Heading Action */}
-      <div className={`p-5 border-b border-slate-50 dark:border-slate-800/60 pb-4 flex items-center justify-between bg-radial from-transparent to-slate-50/20 dark:to-slate-900/10`}>
+      <div className={`p-5 border-b pb-4 flex items-center justify-between ${
+        type === 'expense'
+          ? 'border-[#2872A1]/10 bg-transparent'
+          : 'border-b border-slate-50 dark:border-slate-800/60 bg-radial from-transparent to-slate-50/20 dark:to-slate-900/10'
+      }`}>
         <div className="flex items-center gap-3">
           <div className={`rounded-2xl p-2.5 ${
             type === 'saving' 
               ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-400' 
-              : 'bg-rose-50 text-rose-500 dark:bg-rose-950/40 dark:text-rose-400'
+              : type === 'expense'
+                ? 'bg-[#2872A1]/10 text-[#2872A1]'
+                : 'bg-rose-50 text-rose-500 dark:bg-rose-950/40 dark:text-rose-400'
           }`}>
             {type === 'saving' ? (
               <TrendingUp className="h-6 w-6 stroke-[2.25]" />
@@ -117,10 +127,14 @@ export const TransactionPane: React.FC<TransactionPaneProps> = ({
             )}
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white leading-tight font-display">
+            <h3 className={`text-lg font-bold leading-tight font-display ${
+              type === 'expense' ? 'text-[#2872A1]' : 'text-slate-800 dark:text-white'
+            }`}>
               {type === 'saving' ? 'Savings Pane' : 'Expenses Pane'}
             </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+            <p className={`text-xs mt-0.5 ${
+              type === 'expense' ? 'text-[#2872A1]/75' : 'text-slate-400 dark:text-slate-500'
+            }`}>
               {type === 'saving' ? 'Manage your capital inflows' : 'Log and audit your spending'}
             </p>
           </div>
@@ -133,7 +147,9 @@ export const TransactionPane: React.FC<TransactionPaneProps> = ({
           className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-bold text-white transition-all active:scale-[0.97] hover:shadow-lg ${
             type === 'saving' 
               ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/10 hover:shadow-emerald-500/20 dark:bg-emerald-600 dark:hover:bg-emerald-500' 
-              : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/10 hover:shadow-rose-500/20 dark:bg-rose-600 dark:hover:bg-rose-500'
+              : type === 'expense'
+                ? 'bg-[#2872A1] hover:bg-[#2872A1]/90 shadow-[#2872A1]/15 text-[#F0EDE4]'
+                : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/10 hover:shadow-rose-500/20 dark:bg-rose-600 dark:hover:bg-rose-500'
           }`}
         >
           <Plus className="h-4 w-4 stroke-[2.5]" />
@@ -142,42 +158,62 @@ export const TransactionPane: React.FC<TransactionPaneProps> = ({
       </div>
 
       {/* Filter / Search Controls */}
-      <div className="p-4 bg-slate-50/50 dark:bg-slate-900/40 border-b border-slate-50 dark:border-slate-800/60 flex flex-col sm:flex-row gap-3">
+      <div className={`p-4 border-b flex flex-col sm:flex-row gap-3 ${
+        type === 'expense'
+          ? 'bg-[#2872A1]/5 border-[#2872A1]/10'
+          : 'bg-slate-50/50 dark:bg-slate-900/40 border-b border-slate-50 dark:border-slate-800/60'
+      }`}>
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
+          <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 ${
+            type === 'expense' ? 'text-[#2872A1]/60' : 'text-slate-400 dark:text-slate-500'
+          }`} />
           <input
             id={`${type}-search-input`}
             type="text"
             placeholder="Search amount, description, tags"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none transition-all focus:border-indigo-500 placeholder-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:border-indigo-500"
+            className={`w-full pl-9 pr-3 py-2 text-xs font-semibold rounded-xl outline-none transition-all ${
+              type === 'expense'
+                ? 'border border-[#2872A1]/20 bg-white/65 text-[#2872A1] focus:border-[#2872A1] focus:bg-white placeholder-[#2872A1]/40'
+                : 'border border-slate-200 bg-white text-slate-700 focus:border-indigo-500 placeholder-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:border-indigo-500'
+            }`}
           />
         </div>
 
         {/* Category Pick Filter */}
         <div className="relative min-w-[120px]">
-          <Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+          <Filter className={`absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${
+            type === 'expense' ? 'text-[#2872A1]/60' : 'text-slate-400 dark:text-slate-500'
+          }`} />
           <select
             id={`${type}-category-filter`}
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full pl-8 pr-6 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-600 appearance-none outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:focus:border-indigo-500"
+            className={`w-full pl-8 pr-6 py-2 text-xs font-bold rounded-xl appearance-none outline-none ${
+              type === 'expense'
+                ? 'border border-[#2872A1]/20 bg-white/65 text-[#2872A1] focus:border-[#2872A1]'
+                : 'border border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:focus:border-indigo-500'
+            }`}
           >
             <option value="All">All Categories</option>
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center pr-1 text-slate-400 dark:text-slate-500">
+          <div className={`pointer-events-none absolute inset-y-0 right-2 flex items-center pr-1 ${
+            type === 'expense' ? 'text-[#2872A1]/60' : 'text-slate-400 dark:text-slate-500'
+          }`}>
             <Plus className="h-3 w-3 rotate-45" />
           </div>
         </div>
       </div>
 
       {/* Transaction Records List */}
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-white dark:bg-slate-900">
+      <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar ${
+        type === 'expense' ? 'bg-[#F0EDE4]' : 'bg-white dark:bg-slate-900'
+      }`}>
         <AnimatePresence initial={false}>
           {filteredTransactions.length > 0 ? (
             <div className="space-y-3">
@@ -191,39 +227,57 @@ export const TransactionPane: React.FC<TransactionPaneProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -15 }}
                     transition={{ duration: 0.2 }}
-                    className="group relative flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-3.5 dark:border-slate-800/80 dark:bg-slate-800/30 hover:border-slate-200 dark:hover:border-slate-700 shadow-2xs hover:shadow-xs transition-all duration-200"
+                    className={`group relative flex items-center justify-between rounded-2xl border p-3 shadow-2xs hover:shadow-xs transition-all duration-200 overflow-hidden ${
+                      type === 'expense'
+                        ? 'border-[#2872A1]/10 bg-white/70 hover:bg-white text-[#2872A1]'
+                        : 'border-slate-100 bg-white dark:border-slate-800/80 dark:bg-slate-800/30 hover:border-slate-200 dark:hover:border-slate-700'
+                    }`}
                   >
                     {/* Color Banner Indicator */}
-                    <div className={`absolute left-0 top-1/3 bottom-1/3 w-[3.5px] rounded-r-full ${colors.banner}`} />
+                    <div className={`absolute left-0 top-1/3 bottom-1/3 w-[3.5px] rounded-r-full ${
+                      type === 'expense' ? 'bg-[#2872A1]/45' : colors.banner
+                    }`} />
 
-                    <div className="flex items-center gap-3 pl-1">
+                    <div className="flex items-center gap-2.5 pl-1 min-w-0 flex-1">
                       {/* Badge representation */}
-                      <div className={`rounded-xl px-2.5 py-1.5 text-xs font-bold flex flex-col justify-center items-center ${colors.bg} ${colors.text} ${colors.border} border`}>
+                      <div className={`rounded-xl px-2.5 py-1.5 text-xs font-bold flex flex-col justify-center items-center shrink-0 ${
+                        type === 'expense'
+                          ? 'bg-[#2872A1]/10 text-[#2872A1] border border-[#2872A1]/20'
+                          : `${colors.bg} ${colors.text} ${colors.border} border`
+                      }`}>
                         <span className="font-display font-bold font-sans tracking-wide text-[10px] uppercase">
                           {transaction.category.substring(0, 3)}
                         </span>
                       </div>
 
                       {/* Content block */}
-                      <div className="max-w-[140px] sm:max-w-[200px]">
-                        <p className="font-medium text-slate-800 dark:text-slate-200 text-sm truncate leading-snug">
+                      <div className="min-w-0 flex-1 pr-1">
+                        <p className={`font-medium text-xs sm:text-sm truncate leading-snug ${
+                          type === 'expense' ? 'text-[#2872A1]' : 'text-slate-800 dark:text-slate-200'
+                        }`}>
                           {transaction.category}
                         </p>
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate leading-snug mt-0.5">
+                        <p className={`text-[10px] sm:text-[11px] truncate leading-snug mt-0.5 ${
+                          type === 'expense' ? 'text-[#2872A1]/70' : 'text-slate-400 dark:text-slate-500'
+                        }`}>
                           {transaction.description || 'No notes added'}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-2">
                       {/* Value and Date */}
                       <div className="text-right">
-                        <p className={`font-mono text-sm font-bold tracking-tight ${
-                          type === 'saving' ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-800 dark:text-white'
+                        <p className={`font-mono text-xs sm:text-sm font-bold tracking-tight ${
+                          type === 'saving' 
+                            ? 'text-emerald-500 dark:text-emerald-400' 
+                            : 'text-rose-600 font-extrabold'
                         }`}>
                           {type === 'saving' ? '+' : '-'}{formatCurrency(transaction.amount, country.locale, country.currency)}
                         </p>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center justify-end gap-1 mt-0.5 font-sans font-medium">
+                        <p className={`text-[9px] sm:text-[10px] flex items-center justify-end gap-1 mt-0.5 font-sans font-medium ${
+                          type === 'expense' ? 'text-[#2872A1]/75' : 'text-slate-400 dark:text-slate-500'
+                        }`}>
                           <Calendar className="h-2.5 w-2.5" />
                           {getMonthName(transaction.date)}
                         </p>
@@ -233,7 +287,11 @@ export const TransactionPane: React.FC<TransactionPaneProps> = ({
                       <button
                         id={`delete-btn-${transaction.id}`}
                         onClick={() => onDeleteTransaction(transaction.id)}
-                        className="rounded-xl p-2 text-slate-300 hover:bg-rose-50 hover:text-rose-500 dark:text-slate-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                        className={`rounded-xl p-2 transition-all ${
+                          type === 'expense'
+                            ? 'text-[#2872A1]/50 hover:bg-[#2872A1]/10 hover:text-rose-600'
+                            : 'text-slate-350 hover:bg-rose-50 hover:text-rose-500 dark:text-slate-500 dark:hover:bg-rose-950/20 dark:hover:text-rose-400'
+                        } opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100`}
                         title="Delete log"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -251,16 +309,22 @@ export const TransactionPane: React.FC<TransactionPaneProps> = ({
               className="h-full flex flex-col items-center justify-center py-10 px-4 text-center"
             >
               <div className={`rounded-2xl p-4 mb-4 ${
-                type === 'saving' ? 'bg-emerald-50/50 dark:bg-emerald-950/15' : 'bg-rose-50/50 dark:bg-rose-950/15'
+                type === 'saving' 
+                  ? 'bg-emerald-50/50 dark:bg-emerald-950/15' 
+                  : 'bg-[#2872A1]/10'
               }`}>
                 <Layers className={`h-8 w-8 stroke-[1.5] ${
-                  type === 'saving' ? 'text-emerald-400' : 'text-rose-400'
+                  type === 'saving' ? 'text-emerald-400' : 'text-[#2872A1]/70'
                 }`} />
               </div>
-              <p className="text-sm font-bold text-slate-700 dark:text-slate-300 font-display">
+              <p className={`text-sm font-bold font-display ${
+                type === 'expense' ? 'text-[#2872A1]' : 'text-slate-700 dark:text-slate-300'
+              }`}>
                 No matching {type === 'saving' ? 'savings' : 'expenses'}
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-[200px]">
+              <p className={`text-xs mt-1 max-w-[200px] ${
+                type === 'expense' ? 'text-[#2872A1]/70' : 'text-slate-400 dark:text-slate-500'
+              }`}>
                 {searchQuery || selectedCategory !== 'All' 
                   ? 'Try relaxing your filter keywords' 
                   : `Tap '+ Add' to log your first client transaction!`}
@@ -271,13 +335,21 @@ export const TransactionPane: React.FC<TransactionPaneProps> = ({
       </div>
 
       {/* Pane Footer total sum */}
-      <div className="bg-slate-50 dark:bg-slate-900/60 border-t border-slate-50 dark:border-slate-800 px-5 py-3.5 flex items-center justify-between">
-        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+      <div className={`border-t px-5 py-3.5 flex items-center justify-between ${
+        type === 'expense'
+          ? 'bg-[#2872A1]/5 border-[#2872A1]/10'
+          : 'bg-slate-50 dark:bg-slate-900/60 border-t border-slate-50 dark:border-slate-800'
+      }`}>
+        <span className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
+          type === 'expense' ? 'text-[#2872A1]/80' : 'text-slate-400 dark:text-slate-500'
+        }`}>
           <Layers className="h-3.5 w-3.5" />
           Pane Filtered Total:
         </span>
         <span className={`font-mono text-md font-extrabold tracking-tight ${
-          type === 'saving' ? 'text-emerald-500' : 'text-rose-500'
+          type === 'saving' 
+            ? 'text-emerald-500' 
+            : 'text-rose-600 font-extrabold'
         }`}>
           {formatCurrency(visibleTotal, country.locale, country.currency)}
         </span>

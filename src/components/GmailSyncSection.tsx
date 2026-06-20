@@ -25,11 +25,13 @@ import { prettifyGeminiError } from '../utils/geminiClient';
 
 interface GmailSyncSectionProps {
   onAddTransaction: (newTx: Omit<Transaction, 'id' | 'createdAt'>) => void;
+  transactions?: Transaction[];
   country: CountryCurrency;
 }
 
 export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({ 
   onAddTransaction,
+  transactions,
   country
 }) => {
   const [needsAuth, setNeedsAuth] = useState<boolean>(true);
@@ -49,6 +51,45 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [syncLimit, setSyncLimit] = useState<number>(20);
+
+  // Synced Gmail Message IDs state tracked in localStorage to prevent duplicate syncs
+  const [syncedMsgIds, setSyncedMsgIds] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('saji_synced_gmail_ids');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const markMsgIdSynced = (msgId: string) => {
+    setSyncedMsgIds(prev => {
+      const next = prev.includes(msgId) ? prev : [...prev, msgId];
+      localStorage.setItem('saji_synced_gmail_ids', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const getDuplicationStatus = (item: GmailMessage) => {
+    // 1. Check exact msg.id history
+    if (syncedMsgIds.includes(item.id)) {
+      return { isDuplicate: true, reason: 'Already Synced (Email ID)' };
+    }
+
+    // 2. Check if parsed details match any existing transaction inside the ledger (amount, date & type)
+    if (item.parsed && transactions) {
+      const isMatch = transactions.some(tx => 
+        tx.amount === item.parsed?.amount &&
+        tx.date === item.parsed?.date &&
+        tx.type === item.parsed?.type
+      );
+      if (isMatch) {
+        return { isDuplicate: true, reason: `Matches Ledger ID/Amount of $${item.parsed.amount.toFixed(2)} on ${item.parsed.date}` };
+      }
+    }
+
+    return { isDuplicate: false, reason: '' };
+  };
 
   // For inline manual review of a single message before importing
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
@@ -254,9 +295,21 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
       return;
     }
 
+    let addedCount = 0;
+    let skippedCount = 0;
+
     // Add each parsed transaction to ledger
     parsedMessages.forEach(msg => {
       if (msg.parsed) {
+        // Run duplication check
+        const dupStatus = getDuplicationStatus(msg);
+        if (dupStatus.isDuplicate) {
+          skippedCount++;
+          // Mark as synced so we don't present it for parsing again
+          markMsgIdSynced(msg.id);
+          return;
+        }
+
         onAddTransaction({
           amount: msg.parsed.amount,
           type: msg.parsed.type,
@@ -264,15 +317,21 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
           description: msg.parsed.description,
           date: msg.parsed.date
         });
+        markMsgIdSynced(msg.id);
+        addedCount++;
       }
     });
 
-    // Remove imported messages from feed list
-    const importedIds = new Set(parsedMessages.map(m => m.id));
-    setMessages(prev => prev.filter(m => !importedIds.has(m.id)));
+    // Remove imported/skipped messages from feed list
+    const processedIds = new Set(parsedMessages.map(m => m.id));
+    setMessages(prev => prev.filter(m => !processedIds.has(m.id)));
     setEditingMsgId(null);
 
-    alert(`Successfully verified and imported ${parsedMessages.length} bank alert transactions to the ledger ledger!`);
+    if (skippedCount > 0) {
+      alert(`Import completed! Added ${addedCount} transactions. Skipped ${skippedCount} duplicate entries to prevent doubled records.`);
+    } else {
+      alert(`Successfully verified and imported ${addedCount} bank alert transactions to the ledger!`);
+    }
   };
 
   const handleParseAndImportAll = async () => {
@@ -289,11 +348,19 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
 
     let successCount = 0;
     let failCount = 0;
+    let skippedCount = 0;
 
     for (let index = 0; index < unparsedMessages.length; index++) {
       const msg = unparsedMessages[index];
+
+      // Pre-check: if exact message.id is already registered in synced history, skip right away
+      if (syncedMsgIds.includes(msg.id)) {
+        skippedCount++;
+        setMessages(prev => prev.filter(m => m.id !== msg.id));
+        continue;
+      }
+
       setParseAllProgress(`Parsing & importing ${index + 1} of ${unparsedMessages.length}...`);
-      
       setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, loading: true } : m));
 
       try {
@@ -301,14 +368,32 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
         const amount = parseFloat(result.amount) || 0;
         
         if (amount > 0) {
+          const type = result.type === 'saving' ? 'saving' : 'expense';
+          const dateStr = result.date || new Date().toISOString().substring(0, 10);
+
+          // Post-parse check: check ledger duplication
+          const isMatch = transactions?.some(tx => 
+            tx.amount === amount &&
+            tx.date === dateStr &&
+            tx.type === type
+          );
+
+          if (isMatch) {
+            skippedCount++;
+            markMsgIdSynced(msg.id);
+            setMessages(prev => prev.filter(m => m.id !== msg.id));
+            continue;
+          }
+
           // Add transaction directly to ledger
           onAddTransaction({
             amount: amount,
-            type: result.type === 'saving' ? 'saving' : 'expense',
+            type: type,
             category: result.category || 'Others',
             description: result.description || 'DBS Alert Entry',
-            date: result.date || new Date().toISOString().substring(0, 10)
+            date: dateStr
           });
+          markMsgIdSynced(msg.id);
           successCount++;
           // Filter out the imported alert
           setMessages(prev => prev.filter(m => m.id !== msg.id));
@@ -330,10 +415,15 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
 
     setIsParsingAll(false);
     setParseAllProgress('');
+    
+    let outcomeMessage = `Success! Parsed and imported ${successCount} transaction alerts.`;
+    if (skippedCount > 0) {
+      outcomeMessage += ` ${skippedCount} duplicate alerts were automatically skipped.`;
+    }
     if (failCount > 0) {
-      setErrorMsg(`Successfully parsed and auto-imported ${successCount} alerts. ${failCount} alerts could not be analyzed due to temporary rate limits. Try parsing them individually!`);
+      setErrorMsg(`Successfully parsed and auto-imported ${successCount} alerts (skipped ${skippedCount} duplicates). ${failCount} alerts could not be analyzed due to temporary rate limits. Try parsing them individually!`);
     } else {
-      alert(`Success! Successfully parsed and imported all ${successCount} transaction alerts!`);
+      alert(outcomeMessage);
     }
   };
 
@@ -360,16 +450,36 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
       return;
     }
 
+    const dateStr = editDate || new Date().toISOString().substring(0, 10);
+
+    // Dynamic duplication check on current state
+    const isMatch = transactions?.some(tx => 
+      tx.amount === doubleAmount &&
+      tx.date === dateStr &&
+      tx.type === editType
+    );
+
+    if (isMatch) {
+      if (!confirm(`Duplicate warning! There is already a transaction matching $${doubleAmount.toFixed(2)} on ${dateStr} in your records. Would you like to skip importing this, or add it anyway? Click 'OK' to add it anyway, or 'Cancel' to skip.`)) {
+        // Discard it cleanly
+        markMsgIdSynced(msgId);
+        setMessages(prev => prev.filter(m => m.id !== msgId));
+        setEditingMsgId(null);
+        return;
+      }
+    }
+
     // Call top-level action to enter into main records list!
     onAddTransaction({
       amount: doubleAmount,
       type: editType,
       category: editCategory,
       description: editDescription || 'DBS Bank Alert Transaction',
-      date: editDate || new Date().toISOString().substring(0, 10)
+      date: dateStr
     });
 
     // Mark email item as parsed and added so we don't import repeatedly
+    markMsgIdSynced(msgId);
     setMessages(prev => prev.filter(m => m.id !== msgId));
     setEditingMsgId(null);
   };
@@ -378,19 +488,6 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
 
   return (
     <div className="space-y-6" id="gmail-sync-workspace">
-      {/* Scope Disclaimer / Banner info */}
-      <div className="flex items-start gap-3 p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100/40 dark:bg-zinc-950 dark:border-zinc-850">
-        <ShieldCheck className="h-5 w-5 text-indigo-600 shrink-0 mt-0.5 dark:text-indigo-400" />
-        <div className="space-y-1">
-          <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-            Secure DBS Bank alerts sync (Gmail OAuth)
-          </h4>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-            This module searches exclusively for DBS debit/credit notifications sent to your Google mailbox from <code className="font-mono px-1 py-0.5 bg-slate-100 dark:bg-zinc-850 rounded text-slate-650 dark:text-zinc-300">ibanking.alert@dbs.com</code>. Your bank notification summaries are decoded in memory, then parsed using modern Gemini models to capture pricing and merchant names with your authorization.
-          </p>
-        </div>
-      </div>
-
       {errorMsg && (
         <div className="flex items-start gap-2.5 p-4 rounded-xl border border-rose-100 bg-rose-50/20 text-rose-600 dark:border-rose-950/20 dark:bg-rose-950/10 dark:text-rose-400 text-xs">
           <AlertCircle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
@@ -740,6 +837,7 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
               <div className="grid grid-cols-1 gap-3.5 max-h-[50vh] overflow-y-auto pr-1">
                 {messages.map((item) => {
                   const isEditingThis = editingMsgId === item.id;
+                  const dupStatus = getDuplicationStatus(item);
 
                   return (
                     <div 
@@ -747,13 +845,22 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
                       className={`p-4 rounded-2xl border transition-all duration-300 flex flex-col gap-4 bg-white dark:bg-zinc-950 ${
                         isEditingThis 
                           ? 'border-indigo-500 ring-2 ring-indigo-500/10' 
-                          : 'border-slate-150 dark:border-zinc-855 hover:border-slate-200 dark:hover:border-zinc-750'
+                          : dupStatus.isDuplicate
+                            ? 'border-amber-200/60 bg-amber-50/5 dark:border-amber-950/20 dark:bg-amber-950/5 opacity-80 hover:opacity-100'
+                            : 'border-slate-150 dark:border-zinc-855 hover:border-slate-200 dark:hover:border-zinc-750'
                       }`}
                     >
                       {/* Top Message Information Row */}
                       <div className="flex items-start justify-between gap-3 border-b border-slate-50 dark:border-zinc-900 pb-2">
-                        <div className="space-y-0.5">
-                          <p className="text-[10.5px] font-bold font-mono text-indigo-600 dark:text-indigo-400">
+                        <div className="space-y-1 min-w-0 flex-1 text-left">
+                          {dupStatus.isDuplicate && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 dark:bg-amber-950/35 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-600/15 dark:ring-amber-900/40 mb-1">
+                              ⚠️ Potential Duplicate: {dupStatus.reason}
+                            </span>
+                          )}
+                          <p className={`text-[10.5px] font-bold font-mono ${
+                            dupStatus.isDuplicate ? 'text-amber-600 dark:text-amber-500' : 'text-indigo-600 dark:text-indigo-400'
+                          }`}>
                             Subject: {item.subject}
                           </p>
                           <p className="text-[11px] leading-relaxed text-slate-500 dark:text-zinc-400">
@@ -826,9 +933,9 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
                                   setEditType('expense');
                                   setEditCategory('Others');
                                 }}
-                                className={`flex-1 text-[10px] font-bold py-1.5 rounded-lg border text-center transition-colors cursor-pointer ${
+                                className={`flex-1 text-[10px] font-black py-1.5 rounded-lg border-2 text-center transition-colors cursor-pointer ${
                                   editType === 'expense'
-                                    ? 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/20 dark:border-rose-900/40 dark:text-rose-400'
+                                    ? 'bg-white border-white text-red-500 dark:bg-zinc-900 dark:border-white dark:text-red-400 shadow-sm'
                                     : 'border-slate-200 dark:border-zinc-800 text-slate-405'
                                   }`}
                               >
@@ -920,6 +1027,15 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
                                   type="button"
                                   onClick={() => {
                                     if (item.parsed) {
+                                      const dupStatus = getDuplicationStatus(item);
+                                      if (dupStatus.isDuplicate) {
+                                        if (!confirm(`Duplicate warning! ${dupStatus.reason}. Are you sure you want to import this potential duplicate transaction anyway?`)) {
+                                          // Discard cleanly
+                                          markMsgIdSynced(item.id);
+                                          setMessages(prev => prev.filter(m => m.id !== item.id));
+                                          return;
+                                        }
+                                      }
                                       onAddTransaction({
                                         amount: item.parsed.amount,
                                         type: item.parsed.type,
@@ -927,6 +1043,7 @@ export const GmailSyncSection: React.FC<GmailSyncSectionProps> = ({
                                         description: item.parsed.description,
                                         date: item.parsed.date
                                       });
+                                      markMsgIdSynced(item.id);
                                       setMessages(prev => prev.filter(m => m.id !== item.id));
                                     }
                                   }}
